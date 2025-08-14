@@ -1,38 +1,43 @@
-// App.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import SummaryCards from './components/dashboard/SummaryCards';
 import StatusChart from './components/dashboard/StatusChart';
 import RecentLogs from './components/dashboard/RecentLogs';
-import LogFilters from './components/logs/LogFilters';
-import LogsTable from './components/logs/LogsTable';
+import LogFilters from './components/logsdata/LogFilters';
+import LogsTable from './components/logsdata/LogsTable';
+import AddLogForm from './components/logsdata/AddLogForm';
 import useSummary from './hooks/useSummary';
 import useLogs from './hooks/useLogs';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard');
+
   const [logFilters, setLogFilters] = useState({
     status: '',
     interfaceName: '',
     integrationKey: '',
     page: 1,
-    limit: 50
+    limit: 50,
   });
 
   const { summary, loading: summaryLoading, refetch: refetchSummary } = useSummary();
-  const { logs: dashboardLogs, loading: dashboardLogsLoading } = useLogs({ limit: 10 });
+
+  
+  const dashboardLogFilters = useMemo(() => ({ limit: 10 }), []);
+  const { logs: dashboardLogs, loading: dashboardLogsLoading } = useLogs(dashboardLogFilters);
+
   const {
     logs,
     loading: logsLoading,
     totalPages,
     currentPage,
-    refetch: refetchLogs
+    refetch: refetchLogs,
   } = useLogs(logFilters);
 
   const handleLogPageChange = (newPage) => {
-    setLogFilters(prev => ({ ...prev, page: newPage }));
+    setLogFilters((prev) => ({ ...prev, page: newPage }));
   };
 
   const handleLogFiltersChange = (newFilters) => {
@@ -54,9 +59,20 @@ export default function App() {
         <main className="flex-1 overflow-y-auto lg:ml-64">
           {currentView === 'dashboard' && (
             <div className="p-6 max-w-7xl mx-auto">
-              <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600 mt-1">Monitor your interface integrations in real-time</p>
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+                  <p className="text-gray-600 mt-1">
+                    Monitor your interface integrations in real-time
+                  </p>
+                </div>
+               
+                <button
+                  onClick={() => setCurrentView('add-log')}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  ➕ Add Log
+                </button>
               </div>
 
               <SummaryCards
@@ -65,7 +81,7 @@ export default function App() {
                 onRefresh={refetchSummary}
               />
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
                 <StatusChart summary={summary} loading={summaryLoading} />
                 <RecentLogs logs={dashboardLogs} loading={dashboardLogsLoading} />
               </div>
@@ -74,9 +90,20 @@ export default function App() {
 
           {currentView === 'logs' && (
             <div className="p-6 max-w-7xl mx-auto">
-              <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Interface Logs</h1>
-                <p className="text-gray-600 mt-1">View and filter all interface integration logs</p>
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Interface Logs</h1>
+                  <p className="text-gray-600 mt-1">
+                    View and filter all interface integration logs
+                  </p>
+                </div>
+                
+                <button
+                  onClick={() => setCurrentView('add-log')}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  ➕ Add Log
+                </button>
               </div>
 
               <LogFilters
@@ -91,6 +118,22 @@ export default function App() {
                 totalPages={totalPages}
                 currentPage={currentPage}
                 onPageChange={handleLogPageChange}
+              />
+            </div>
+          )}
+
+          {currentView === 'add-log' && (
+            <div className="p-6 max-w-3xl mx-auto">
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900">Add Log</h1>
+                <p className="text-gray-600 mt-1">Submit a new integration log</p>
+              </div>
+
+              <AddLogForm
+                onSuccess={() => {
+                  alert('Log created successfully!');
+                  setCurrentView('logs'); 
+                }}
               />
             </div>
           )}
