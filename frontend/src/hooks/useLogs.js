@@ -5,6 +5,7 @@ const useLogs = (filters) => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(filters.page || 1);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -12,6 +13,7 @@ const useLogs = (filters) => {
       const res = await axios.get('/api/logs', { params: filters });
       setLogs(res.data.logs || []);
       setTotalPages(res.data.totalPages || 1);
+      setCurrentPage(filters.page || 1);
     } catch (error) {
       console.error('Failed to fetch logs:', error);
     } finally {
@@ -23,7 +25,7 @@ const useLogs = (filters) => {
     fetchLogs();
   }, [filters]);
 
-  return { logs, loading, totalPages, refetch: fetchLogs };
+  return { logs, loading, totalPages, currentPage, refetch: fetchLogs };
 };
 
 export default useLogs;

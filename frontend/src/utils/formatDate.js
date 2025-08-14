@@ -1,19 +1,25 @@
-export const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
+export const formatDate = (dateString) => {
+  if (!dateString) return '-';
+  
+  const date = new Date(dateString);
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) return '-';
+  
   const now = new Date();
-  const diffMs = now - date;
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffHours < 1) {
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    return `${diffMins}m ago`;
-  } else if (diffHours < 24) {
-    return `${diffHours}h ago`;
-  } else if (diffDays === 1) {
+  const diffInHours = (now - date) / (1000 * 60 * 60);
+  
+  if (diffInHours < 1) {
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    return `${diffInMinutes} minutes ago`;
+  } else if (diffInHours < 24) {
+    const hours = Math.floor(diffInHours);
+    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  } else if (diffInHours < 48) {
     return 'Yesterday';
   } else {
     return date.toLocaleDateString('en-US', {
+      year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
